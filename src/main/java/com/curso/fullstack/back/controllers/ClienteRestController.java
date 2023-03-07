@@ -71,8 +71,13 @@ public class ClienteRestController {
     }
 
     @DeleteMapping("/clientes/{id}")
-    public void destroy(@PathVariable Long id) {
-        clienteService.delete(id);
+    public ResponseEntity<?> destroy(@PathVariable Long id) {
+        try {
+            clienteService.delete(id);
+            return responsesService.getStatusOk("User deleted");
+        } catch (Exception e) {
+            return responsesService.getInternalError("Error al elimnar el cliente debido a : ".concat(e.getMessage()));
+        }
     }
 
 }
