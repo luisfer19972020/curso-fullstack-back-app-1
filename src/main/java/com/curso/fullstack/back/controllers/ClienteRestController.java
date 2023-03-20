@@ -1,9 +1,12 @@
 package com.curso.fullstack.back.controllers;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,6 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.curso.fullstack.back.models.entity.Cliente;
 import com.curso.fullstack.back.models.services.IClienteService;
 import com.curso.fullstack.back.models.services.IResponsesService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
@@ -43,7 +48,12 @@ public class ClienteRestController {
     }
 
     @PostMapping("/clientes")
-    public ResponseEntity<?> create(@RequestBody Cliente clienteRequest) {
+    public ResponseEntity<?> create(@Valid @RequestBody Cliente clienteRequest, BindingResult result) {
+        if (result.hasErrors()) {
+            return responsesService.getBadRequest(
+                    result.getFieldErrors().stream().map(e -> e.getField().concat(": ").concat(e.getDefaultMessage()))
+                            .collect(Collectors.toList()));
+        }
         try {
             return responsesService.getStatusCreated(this.clienteService.save(clienteRequest));
         } catch (Exception e) {
@@ -53,7 +63,13 @@ public class ClienteRestController {
     }
 
     @PutMapping("/clientes/{id}")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody Cliente clienteUpdated) {
+    public ResponseEntity<?> update(@PathVariable Long id, @Valid @RequestBody Cliente clienteUpdated,
+            BindingResult result) {
+        if (result.hasErrors()) {
+            return responsesService.getBadRequest(
+                    result.getFieldErrors().stream().map(e -> e.getField().concat(": ").concat(e.getDefaultMessage()))
+                            .collect(Collectors.toList()));
+        }
         try {
             Cliente cliente = clienteService.findById(id);
             if (cliente == null) {
@@ -74,7 +90,7 @@ public class ClienteRestController {
     public ResponseEntity<?> destroy(@PathVariable Long id) {
         try {
             clienteService.delete(id);
-            return responsesService.getStatusOk("User deleted");
+            return responsesService.getStatusOk(Map.of("message", "User deleted"));
         } catch (Exception e) {
             return responsesService.getInternalError("Error al elimnar el cliente debido a : ".concat(e.getMessage()));
         }

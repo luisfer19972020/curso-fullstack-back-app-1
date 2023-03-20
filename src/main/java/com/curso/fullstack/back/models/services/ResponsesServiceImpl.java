@@ -1,5 +1,6 @@
 package com.curso.fullstack.back.models.services;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -13,9 +14,17 @@ public class ResponsesServiceImpl implements IResponsesService {
     @Value("${status.message.key}")
     private String MESSAGE_KEY;
 
+    @Value("${status.errors.key}")
+    private String ERRORS_KEY;
+
     @Override
     public ResponseEntity<?> getInternalError(String message) {
         return new ResponseEntity<>(Map.of(MESSAGE_KEY, message), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<?> getBadRequest(List<String> errors) {
+        return new ResponseEntity<>(Map.of(ERRORS_KEY, errors), HttpStatus.BAD_REQUEST);
     }
 
     @Override
