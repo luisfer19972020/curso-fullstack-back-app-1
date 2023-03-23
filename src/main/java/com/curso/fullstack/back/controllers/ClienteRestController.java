@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -37,6 +39,11 @@ public class ClienteRestController {
     @GetMapping("/clientes")
     public ResponseEntity<List<Cliente>> getAll() {
         return ResponseEntity.ok(clienteService.findAll());
+    }
+
+    @GetMapping("/clientes/page/{page}")
+    public ResponseEntity<Page<Cliente>> getAllPaginated(@PathVariable(name = "page") Integer page) {
+        return ResponseEntity.ok(clienteService.findAll(PageRequest.of(page, 4)));
     }
 
     @GetMapping("/clientes/{id}")
