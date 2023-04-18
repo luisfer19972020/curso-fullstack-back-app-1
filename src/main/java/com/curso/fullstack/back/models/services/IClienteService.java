@@ -12,6 +12,8 @@ public interface IClienteService {
 
     public Page<Cliente> findAll(Pageable pageable);
 
+    public Page<Cliente> findAllPrueba(Pageable pageable, String busqueda);
+
     public Cliente save(Cliente cliente);
 
     public Cliente findById(Long id);

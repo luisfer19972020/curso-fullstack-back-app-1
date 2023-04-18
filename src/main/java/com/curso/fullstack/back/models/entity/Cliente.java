@@ -8,12 +8,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 @Entity
@@ -34,12 +34,15 @@ public class Cliente implements Serializable {
     private String email;
     @Column(name = "created_at")
     @Temporal(TemporalType.DATE)
+    @NotNull( message = "La fecha no puede ser nula")
     private Date createdAt;
+    @Column(nullable = true)
+    private String foto;
 
-    @PrePersist
-    public void prePersist() {
-        this.createdAt = new Date();
-    }
+    // @PrePersist
+    // public void prePersist() {
+    // this.createdAt = new Date();
+    // }
 
     public Long getId() {
         return this.id;
@@ -80,6 +83,15 @@ public class Cliente implements Serializable {
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
+
+    public String getFoto() {
+        return this.foto;
+    }
+
+    public void setFoto(String foto) {
+        this.foto = foto;
+    }
+
 
     private static final long serialVersionUID = 1L;
 }

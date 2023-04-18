@@ -46,4 +46,9 @@ public class ClienteServiceImpl implements IClienteService {
         this.clienteDao.deleteById(id);
     }
 
+    @Override
+    public Page<Cliente> findAllPrueba(Pageable pageable, String busqueda) {
+        return this.clienteDao.findAllPrueba(busqueda, pageable);
+    }
+
 }

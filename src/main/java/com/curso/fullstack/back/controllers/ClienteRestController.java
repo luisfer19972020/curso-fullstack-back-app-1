@@ -1,7 +1,12 @@
 package com.curso.fullstack.back.controllers;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +22,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.curso.fullstack.back.models.entity.Cliente;
 import com.curso.fullstack.back.models.services.IClienteService;
@@ -96,6 +103,13 @@ public class ClienteRestController {
     @DeleteMapping("/clientes/{id}")
     public ResponseEntity<?> destroy(@PathVariable Long id) {
         try {
+            Cliente cliente = clienteService.findById(id);
+            if (cliente.getFoto() != null && cliente.getFoto().length() > 0) {
+                File file = Paths.get("uploads").resolve(cliente.getFoto()).toFile();
+                if (file.exists() && file.canRead()) {
+                    file.delete();
+                }
+            }
             clienteService.delete(id);
             return responsesService.getStatusOk(Map.of("message", "User deleted"));
         } catch (Exception e) {
@@ -103,4 +117,37 @@ public class ClienteRestController {
         }
     }
 
+    @PostMapping("/clientes/upload")
+    public ResponseEntity<?> upload(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id) {
+        Cliente cliente = this.clienteService.findById(id);
+        if (cliente == null) {
+            return responsesService.getNotFoundError("Cliente no encontrado");
+        }
+        if (!archivo.isEmpty()) {
+            String nuevoArchivo = String.format("%s_%s", UUID.randomUUID(), archivo.getOriginalFilename());
+            try {
+                Files.copy(archivo.getInputStream(),
+                        Paths.get("uploads")
+                                .resolve(nuevoArchivo)
+                                .toAbsolutePath());
+            } catch (IOException e) {
+                return responsesService
+                        .getInternalError("Error cargar la imagen debido a : ".concat(e.getMessage()));
+            }
+            if (cliente.getFoto() != null && cliente.getFoto().length() > 0) {
+                File file = Paths.get("uploads").resolve(cliente.getFoto()).toFile();
+                if (file.exists() && file.canRead()) {
+                    file.delete();
+                }
+            }
+            cliente.setFoto(nuevoArchivo);
+            clienteService.save(cliente);
+        }
+        return responsesService.getStatusCreated(cliente);
+    }
+
+    @GetMapping("/prueba/{busqueda}/{page}")
+    public ResponseEntity<Page<Cliente>> getPrueba(@PathVariable(name = "busqueda") String busqueda,@PathVariable(name = "page") Integer page) {
+        return ResponseEntity.ok(clienteService.findAllPrueba(PageRequest.of(page, 10), busqueda));
+    }
 }
