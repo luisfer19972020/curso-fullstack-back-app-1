@@ -1,12 +1,8 @@
 package com.curso.fullstack.back.controllers;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.curso.fullstack.back.models.entity.Cliente;
 import com.curso.fullstack.back.models.services.IClienteService;
 import com.curso.fullstack.back.models.services.IResponsesService;
+import com.curso.fullstack.back.models.services.IUploadService;
 
 import jakarta.validation.Valid;
 
@@ -42,6 +39,9 @@ public class ClienteRestController {
 
     @Autowired
     private IResponsesService responsesService;
+
+    @Autowired
+    private IUploadService uploadService;
 
     @GetMapping("/clientes")
     public ResponseEntity<List<Cliente>> getAll() {
@@ -104,12 +104,7 @@ public class ClienteRestController {
     public ResponseEntity<?> destroy(@PathVariable Long id) {
         try {
             Cliente cliente = clienteService.findById(id);
-            if (cliente.getFoto() != null && cliente.getFoto().length() > 0) {
-                File file = Paths.get("uploads").resolve(cliente.getFoto()).toFile();
-                if (file.exists() && file.canRead()) {
-                    file.delete();
-                }
-            }
+            this.uploadService.delete(cliente.getFoto());
             clienteService.delete(id);
             return responsesService.getStatusOk(Map.of("message", "User deleted"));
         } catch (Exception e) {
@@ -124,22 +119,14 @@ public class ClienteRestController {
             return responsesService.getNotFoundError("Cliente no encontrado");
         }
         if (!archivo.isEmpty()) {
-            String nuevoArchivo = String.format("%s_%s", UUID.randomUUID(), archivo.getOriginalFilename());
+            String nuevoArchivo;
             try {
-                Files.copy(archivo.getInputStream(),
-                        Paths.get("uploads")
-                                .resolve(nuevoArchivo)
-                                .toAbsolutePath());
+                nuevoArchivo = this.uploadService.copy(archivo);
             } catch (IOException e) {
                 return responsesService
                         .getInternalError("Error cargar la imagen debido a : ".concat(e.getMessage()));
             }
-            if (cliente.getFoto() != null && cliente.getFoto().length() > 0) {
-                File file = Paths.get("uploads").resolve(cliente.getFoto()).toFile();
-                if (file.exists() && file.canRead()) {
-                    file.delete();
-                }
-            }
+            this.uploadService.delete(cliente.getFoto());
             cliente.setFoto(nuevoArchivo);
             clienteService.save(cliente);
         }
@@ -147,7 +134,8 @@ public class ClienteRestController {
     }
 
     @GetMapping("/prueba/{busqueda}/{page}")
-    public ResponseEntity<Page<Cliente>> getPrueba(@PathVariable(name = "busqueda") String busqueda,@PathVariable(name = "page") Integer page) {
+    public ResponseEntity<Page<Cliente>> getPrueba(@PathVariable(name = "busqueda") String busqueda,
+            @PathVariable(name = "page") Integer page) {
         return ResponseEntity.ok(clienteService.findAllPrueba(PageRequest.of(page, 10), busqueda));
     }
 }
