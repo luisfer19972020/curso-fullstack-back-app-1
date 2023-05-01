@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.curso.fullstack.back.models.entity.Cliente;
+import com.curso.fullstack.back.models.entity.Region;
 
 public interface IClienteService {
     public List<Cliente> findAll();
@@ -19,4 +20,6 @@ public interface IClienteService {
     public Cliente findById(Long id);
 
     public void delete(Long id);
+
+    public List<Region> getAllRegions();
 }

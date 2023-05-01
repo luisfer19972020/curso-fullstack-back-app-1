@@ -3,11 +3,16 @@ package com.curso.fullstack.back.models.entity;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Temporal;
 import jakarta.persistence.TemporalType;
@@ -34,10 +39,18 @@ public class Cliente implements Serializable {
     private String email;
     @Column(name = "created_at")
     @Temporal(TemporalType.DATE)
-    @NotNull( message = "La fecha no puede ser nula")
+    @NotNull(message = "La fecha no puede ser nula")
     private Date createdAt;
     @Column(nullable = true)
     private String foto;
+
+    // La derecha es el modelo e izquirda su relacion muchos clientes pertenecen a una region
+    @ManyToOne(fetch = FetchType.LAZY)
+    @NotNull( message = "La region no puede ser nula")
+    @JoinColumn(name = "region_id")
+    //Se ignoran las propiedades que egenera por detras sprinboot que deben ser ignorados
+    @JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+    private Region region;
 
     // @PrePersist
     // public void prePersist() {
@@ -92,6 +105,13 @@ public class Cliente implements Serializable {
         this.foto = foto;
     }
 
+    public Region getRegion() {
+        return this.region;
+    }
+
+    public void setRegion(Region region) {
+        this.region = region;
+    }
 
     private static final long serialVersionUID = 1L;
 }

@@ -9,12 +9,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.curso.fullstack.back.models.dao.IClienteDao;
+import com.curso.fullstack.back.models.dao.IRegionDao;
 import com.curso.fullstack.back.models.entity.Cliente;
+import com.curso.fullstack.back.models.entity.Region;
 
 @Service
 public class ClienteServiceImpl implements IClienteService {
     @Autowired
     private IClienteDao clienteDao;
+
+    @Autowired
+    private IRegionDao regionDao;
 
     @Override
     @Transactional(readOnly = true)
@@ -47,8 +52,15 @@ public class ClienteServiceImpl implements IClienteService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<Cliente> findAllPrueba(Pageable pageable, String busqueda) {
         return this.clienteDao.findAllPrueba(busqueda, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Region> getAllRegions() {
+        return regionDao.findAll();
     }
 
 }

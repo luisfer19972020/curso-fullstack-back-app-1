@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.curso.fullstack.back.models.entity.Cliente;
+import com.curso.fullstack.back.models.entity.Region;
 import com.curso.fullstack.back.models.services.IClienteService;
 import com.curso.fullstack.back.models.services.IResponsesService;
 import com.curso.fullstack.back.models.services.IUploadService;
@@ -92,6 +93,7 @@ public class ClienteRestController {
                 cliente.setNombre(clienteUpdated.getNombre());
                 cliente.setApellido(clienteUpdated.getApellido());
                 cliente.setEmail(clienteUpdated.getEmail());
+                cliente.setRegion(clienteUpdated.getRegion());
                 return responsesService.getStatusCreated(this.clienteService.save(cliente));
             }
         } catch (Exception e) {
@@ -138,4 +140,10 @@ public class ClienteRestController {
             @PathVariable(name = "page") Integer page) {
         return ResponseEntity.ok(clienteService.findAllPrueba(PageRequest.of(page, 10), busqueda));
     }
+
+    @GetMapping("/clientes/regiones")
+    public ResponseEntity<List<Region>> getAllRegions() {
+        return ResponseEntity.ok(clienteService.getAllRegions());
+    }
+
 }
